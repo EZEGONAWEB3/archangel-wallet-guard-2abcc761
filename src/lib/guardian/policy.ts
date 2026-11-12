@@ -16,8 +16,8 @@ export interface Policy {
 
 export interface ChainState {
   status: "awaiting_wallet" | "wallet_success" | "wallet_failed" | "submitted";
-  txHash?: string;
-  error?: string;
+  txHash?: string | undefined;
+  error?: string | undefined;
   at: number;
 }
 
