@@ -23,7 +23,7 @@ export function normalizeAccountId(id: string): string {
 export function nearToYocto(amount: number | string): string {
   const str = typeof amount === "number" ? amount.toFixed(6) : amount.trim();
   if (!/^\d+(\.\d+)?$/.test(str)) throw new Error(`Invalid NEAR amount: ${amount}`);
-  const [whole, frac = ""] = str.split(".");
+  const [whole = "0", frac = ""] = str.split(".");
   const fracPadded = (frac + "0".repeat(24)).slice(0, 24);
   return (BigInt(whole) * YOCTO_PER_NEAR + BigInt(fracPadded)).toString();
 }
