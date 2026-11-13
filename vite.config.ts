@@ -23,6 +23,9 @@ export default defineConfig({
                 groups: [
                   {
                     name: "near-wallet",
+                    // Don't drag shared helpers (tslib etc.) in, or the page would load this chunk
+                    // up front, before the Buffer polyfill is in place.
+                    includeDependenciesRecursively: false,
                     test: /node_modules[\\/](@near-wallet-selector|@near-js|@meteorwallet|near-api-js|borsh)[\\/]/,
                   },
                 ],
