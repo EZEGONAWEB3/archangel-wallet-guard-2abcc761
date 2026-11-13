@@ -10,6 +10,29 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  vite: {
+    environments: {
+      client: {
+        build: {
+          rolldownOptions: {
+            output: {
+              // Keep the NEAR wallet/SDK packages in one browser chunk. Split automatically, their
+              // chunks import each other in a cycle and a base class is undefined at load time
+              // ("Class extends value undefined"), so wallet options never appear in production.
+              codeSplitting: {
+                groups: [
+                  {
+                    name: "near-wallet",
+                    test: /node_modules[\\/](@near-wallet-selector|@near-js|@meteorwallet|near-api-js|borsh)[\\/]/,
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
