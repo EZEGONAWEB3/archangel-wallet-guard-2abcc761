@@ -16,31 +16,36 @@ type TransferAction = typeof import("@near-js/transactions").actionCreators.tran
 
 const SERVER_ERROR = "NEAR wallet libraries only load in the browser.";
 
+let libsPromise: Promise<typeof import("./near-wallet-libs")> | undefined;
+
+/** Load the single wallet bundle once, after installing the Node globals it reads at load. */
+async function loadLibs() {
+  const g = globalThis as unknown as { global?: typeof globalThis; Buffer?: unknown };
+  g.global ??= globalThis;
+  if (!g.Buffer) g.Buffer = (await import("buffer")).Buffer;
+  libsPromise ??= import("./near-wallet-libs");
+  try {
+    return await libsPromise;
+  } catch (err) {
+    libsPromise = undefined; // allow Retry after a network failure
+    throw err;
+  }
+}
+
 export const loadWalletLibs: () => Promise<WalletLibs> = import.meta.env.SSR
   ? () => Promise.reject(new Error(SERVER_ERROR))
   : async () => {
-      // Wallet modules read Node's `global` and `Buffer` at load time; set them first.
-      const g = globalThis as unknown as { global?: typeof globalThis; Buffer?: unknown };
-      g.global ??= globalThis;
-      const { Buffer } = await import("buffer");
-      g.Buffer ??= Buffer;
-
-      const [core, mnw, meteor, intear] = await Promise.all([
-        import("@near-wallet-selector/core"),
-        import("@near-wallet-selector/my-near-wallet"),
-        import("@near-wallet-selector/meteor-wallet"),
-        import("@near-wallet-selector/intear-wallet"),
-      ]);
+      const libs = await loadLibs();
       return {
-        setupWalletSelector: core.setupWalletSelector,
-        modules: [mnw.setupMyNearWallet(), meteor.setupMeteorWallet(), intear.setupIntearWallet()],
+        setupWalletSelector: libs.setupWalletSelector,
+        modules: [libs.setupMyNearWallet(), libs.setupMeteorWallet(), libs.setupIntearWallet()],
       };
     };
 
 export const loadTransferAction: () => Promise<TransferAction> = import.meta.env.SSR
   ? () => Promise.reject(new Error(SERVER_ERROR))
   : async () => {
-      const { actionCreators } = await import("@near-js/transactions");
+      const { actionCreators } = await loadLibs();
       return actionCreators.transfer;
     };
 
