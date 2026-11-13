@@ -129,7 +129,13 @@ function Intro() {
           Your AI agents ask; ArchAngel checks each request against your caps and trusted list; you decide.
         </p>
       </div>
-      <Button variant="ghost" size="sm" disabled={!ready} onClick={() => setConfirm(true)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="self-start md:self-auto"
+        disabled={!ready}
+        onClick={() => setConfirm(true)}
+      >
         <RotateCcw /> Reset demo
       </Button>
       <AlertDialog open={confirm} onOpenChange={setConfirm}>

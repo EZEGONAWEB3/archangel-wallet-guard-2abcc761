@@ -124,6 +124,25 @@ export function spentToday(requests: PaymentRequest[], now: number): number {
   );
 }
 
+/**
+ * A transfer left "awaiting_wallet" (page closed or reloaded before the wallet answered) is never
+ * shown as sent: mark it failed so the user can see it and retry.
+ */
+export function settleInterruptedTransfers(requests: PaymentRequest[], at: number): PaymentRequest[] {
+  return requests.map((r) =>
+    r.chain?.status === "awaiting_wallet"
+      ? {
+          ...r,
+          chain: {
+            status: "wallet_failed",
+            error: "The page closed before your wallet answered. Nothing was recorded as sent.",
+            at,
+          },
+        }
+      : r,
+  );
+}
+
 export function round(n: number): number {
   return Math.round(n * 1e6) / 1e6;
 }

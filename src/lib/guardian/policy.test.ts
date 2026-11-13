@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   allowedDecisions,
   evaluatePayment,
+  settleInterruptedTransfers,
   spentToday,
   type PaymentRequest,
   type Policy,
@@ -60,6 +61,20 @@ describe("policy engine", () => {
       { ...base, id: "5", amountNear: 1, status: "pending" },
     ];
     expect(spentToday(reqs, now)).toBe(5);
+  });
+});
+
+describe("interrupted testnet transfers", () => {
+  it("never leaves a transfer that the wallet didn't answer looking sent or in progress", () => {
+    const base = { agent: "a", recipient: "x.testnet", purpose: "p", createdAt: 1, amountNear: 1 };
+    const reqs: PaymentRequest[] = [
+      { ...base, id: "1", status: "approved", chain: { status: "awaiting_wallet", at: 1 } },
+      { ...base, id: "2", status: "approved", chain: { status: "submitted", txHash: "abc", at: 1 } },
+    ];
+    const out = settleInterruptedTransfers(reqs, 5);
+    expect(out[0]?.chain?.status).toBe("wallet_failed");
+    expect(out[0]?.chain?.txHash).toBeUndefined();
+    expect(out[1]?.chain).toEqual({ status: "submitted", txHash: "abc", at: 1 });
   });
 });
 

@@ -9,6 +9,7 @@ import {
   decisionToStatus,
   evaluatePayment,
   round,
+  settleInterruptedTransfers,
   spentToday,
   type ChainState,
   type Decision,
@@ -64,7 +65,7 @@ function logId(): string {
   return `log_${Date.now().toString(36)}_${logCounter}`;
 }
 
-function freshState(now: number): PersistedState {
+function freshState(now: number, reset = false): PersistedState {
   return {
     policy: { ...DEFAULT_POLICY, trusted: [...DEFAULT_POLICY.trusted] },
     requests: createSampleRequests(now),
@@ -74,8 +75,8 @@ function freshState(now: number): PersistedState {
         at: now,
         kind: "system",
         tone: "info",
-        title: "Demo guardian initialized",
-        detail: `Loaded ${REQUEST_TEMPLATES.slice(0, 5).length} sample agent payment requests and a local demo policy.`,
+        title: reset ? "Demo reset" : "Demo guardian initialized",
+        detail: `${reset ? "Cleared the previous demo data. " : ""}Loaded ${REQUEST_TEMPLATES.slice(0, 5).length} sample agent payment requests and a local demo policy.`,
       },
     ],
   };
@@ -104,7 +105,7 @@ export function GuardianProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loaded = load() ?? freshState(Date.now());
     const reconciled = reconcileWalletRedirect(loaded);
-    setState(reconciled);
+    setState({ ...reconciled, requests: settleInterruptedTransfers(reconciled.requests, Date.now()) });
     setNow(Date.now());
     setReady(true);
     const t = setInterval(() => setNow(Date.now()), 60_000);
@@ -247,7 +248,7 @@ export function GuardianProvider({ children }: { children: ReactNode }) {
 
   const resetDemo = useCallback(() => {
     localStorage.removeItem(PENDING_TX_KEY);
-    setState(freshState(Date.now()));
+    setState(freshState(Date.now(), true));
   }, []);
 
   const value: GuardianContextValue = {
