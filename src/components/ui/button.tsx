@@ -22,7 +22,8 @@ const buttonVariants = cva(
         warn: "bg-warning/15 text-warning border border-warning/40 hover:bg-warning hover:text-warning-foreground",
         block:
           "bg-destructive/15 text-destructive border border-destructive/40 hover:bg-destructive hover:text-destructive-foreground",
-        surface: "bg-surface-raised text-foreground border border-border hover:border-primary/50 hover:bg-accent",
+        surface:
+          "bg-surface-raised text-foreground border border-border hover:border-primary/50 hover:bg-accent",
       },
       size: {
         default: "h-9 px-4 py-2",
