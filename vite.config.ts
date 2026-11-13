@@ -10,6 +10,14 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  vite: {
+    resolve: {
+      // NEAR wallet deps `require("buffer")`. Production builds otherwise swap that Node built-in
+      // for an empty browser stub, so `Buffer.from` is undefined and wallets never load.
+      // `buffer/` (trailing slash) is the npm polyfill package.
+      alias: [{ find: /^buffer$/, replacement: "buffer/" }],
+    },
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
