@@ -7,17 +7,29 @@
 // the build fails. Never add compression (compressPublicAssets, vite-plugin-compression):
 // hosting already compresses at the edge.
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
+import { createRequire } from "node:module";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import type { Plugin } from "vite";
+
+/**
+ * NEAR wallet deps call `require("buffer")`. In the production browser build Vite swaps that
+ * Node built-in for an empty stub, so `Buffer.from` is undefined and wallets never load.
+ * Resolve it to the installed `buffer` npm polyfill instead (browser build only).
+ */
+function browserBufferPolyfill(): Plugin {
+  const bufferPath = createRequire(import.meta.url).resolve("buffer/");
+  return {
+    name: "archangel:browser-buffer-polyfill",
+    enforce: "pre",
+    applyToEnvironment: (env) => env.name === "client",
+    resolveId(id) {
+      return id === "buffer" || id === "buffer/" ? bufferPath : null;
+    },
+  };
+}
 
 export default defineConfig({
-  vite: {
-    resolve: {
-      // NEAR wallet deps `require("buffer")`. Production builds otherwise swap that Node built-in
-      // for an empty browser stub, so `Buffer.from` is undefined and wallets never load.
-      // `buffer/` (trailing slash) is the npm polyfill package.
-      alias: [{ find: /^buffer$/, replacement: "buffer/" }],
-    },
-  },
+  plugins: [browserBufferPolyfill()],
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
