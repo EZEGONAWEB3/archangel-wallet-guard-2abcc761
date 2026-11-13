@@ -16,6 +16,7 @@ import type { WalletSelector } from "@near-wallet-selector/core";
 import { fetchTestnetBalance, nearToYocto, NEAR_NETWORK } from "./near";
 import { PENDING_TX_KEY, useGuardian } from "./store";
 import type { PaymentRequest } from "./policy";
+import { loadTransferAction, loadWalletLibs, withTimeout } from "./wallet-modules";
 
 export type WalletStatus = "loading" | "disconnected" | "connecting" | "connected" | "unavailable";
 
@@ -39,6 +40,7 @@ interface WalletContextValue {
   connect: (walletId: string) => Promise<void>;
   disconnect: () => Promise<void>;
   refreshBalance: () => Promise<void>;
+  retryInit: () => void;
   sendTransfer: (req: PaymentRequest) => Promise<void>;
 }
 
@@ -54,6 +56,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [options, setOptions] = useState<WalletOption[]>([]);
   const [initError, setInitError] = useState<string | null>(null);
+  const [initAttempt, setInitAttempt] = useState(0);
 
   const loadBalance = useCallback(async (id: string) => {
     setBalanceError(null);
@@ -71,29 +74,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     (async () => {
       try {
-        // Wallet modules expect Node's `global` and `Buffer` globals in the browser.
-        // Set them before the wallet modules are imported (they read them at load time).
-        const g = globalThis as unknown as { global?: typeof globalThis; Buffer?: unknown };
-        g.global ??= globalThis;
-        const { Buffer } = await import("buffer");
-        g.Buffer ??= Buffer;
-
-        const [
-          { setupWalletSelector },
-          { setupMyNearWallet },
-          { setupMeteorWallet },
-          { setupIntearWallet },
-        ] = await Promise.all([
-          import("@near-wallet-selector/core"),
-          import("@near-wallet-selector/my-near-wallet"),
-          import("@near-wallet-selector/meteor-wallet"),
-          import("@near-wallet-selector/intear-wallet"),
-        ]);
-
-        const selector = await setupWalletSelector({
-          network: NEAR_NETWORK,
-          modules: [setupMyNearWallet(), setupMeteorWallet(), setupIntearWallet()],
-        });
+        setStatus("loading");
+        setInitError(null);
+        const { setupWalletSelector, modules } = await withTimeout(
+          loadWalletLibs(),
+          20_000,
+          "Wallet libraries took too long to load. Check your connection and retry.",
+        );
+        const selector = await withTimeout(
+          setupWalletSelector({ network: NEAR_NETWORK, modules: modules as never }),
+          20_000,
+          "Wallet services didn't respond in time. Retry, or keep using the demo without a wallet.",
+        );
         if (cancelled) return;
         selectorRef.current = selector;
 
@@ -135,7 +127,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       unsubscribe?.();
     };
-  }, []);
+  }, [initAttempt]);
+
+  const retryInit = useCallback(() => setInitAttempt((n) => n + 1), []);
 
   useEffect(() => {
     if (accountId) void loadBalance(accountId);
@@ -209,7 +203,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (req.status !== "approved" && req.status !== "warned") {
         throw new Error("Only approved requests can be sent to your wallet.");
       }
-      const { actionCreators } = await import("@near-js/transactions");
+      const transfer = await loadTransferAction();
       setChain(req.id, { status: "awaiting_wallet", at: Date.now() });
       localStorage.setItem(PENDING_TX_KEY, req.id);
       logEvent({
@@ -222,7 +216,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         const wallet = await selector.wallet();
         const outcome = await wallet.signAndSendTransaction({
           receiverId: req.recipient,
-          actions: [actionCreators.transfer(BigInt(nearToYocto(req.amountNear)))],
+          actions: [transfer(BigInt(nearToYocto(req.amountNear))) as never],
         });
         localStorage.removeItem(PENDING_TX_KEY);
         const hash = outcome?.transaction?.hash ?? outcome?.transaction_outcome?.id;
@@ -272,6 +266,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         connect,
         disconnect,
         refreshBalance,
+        retryInit,
         sendTransfer,
       }}
     >
