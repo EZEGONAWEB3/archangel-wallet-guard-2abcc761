@@ -169,29 +169,43 @@ export function WalletPanel() {
         </div>
       ) : (
         <div className="mt-4 space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {w.status === "unavailable"
-              ? "Wallet options couldn't load. The demo still works without a wallet."
-              : "Not connected. The guardian demo works without a wallet; connect one to see your real testnet balance and optionally send approved payments."}
-          </p>
-          <Button
-            variant="hero"
-            onClick={() => setOpen(true)}
-            disabled={
-              w.status === "loading" || w.status === "connecting" || w.status === "unavailable"
-            }
-          >
-            {w.status === "connecting" || w.status === "loading" ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Wallet />
-            )}
-            {w.status === "connecting"
-              ? "Connecting…"
-              : w.status === "loading"
-                ? "Loading wallets…"
-                : "Connect wallet"}
-          </Button>
+          {w.status === "unavailable" ? (
+            <div className="space-y-2">
+              <p className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
+                Wallet options couldn't load{w.initError ? `: ${w.initError}` : "."}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                The guardian demo still works without a wallet.
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Not connected. The guardian demo works without a wallet; connect one to see your real
+              testnet balance and optionally send approved payments.
+            </p>
+          )}
+          {w.status === "unavailable" ? (
+            <Button variant="surface" onClick={w.retryInit}>
+              <RefreshCw /> Retry loading wallets
+            </Button>
+          ) : (
+            <Button
+              variant="hero"
+              onClick={() => setOpen(true)}
+              disabled={w.status === "loading" || w.status === "connecting"}
+            >
+              {w.status === "connecting" || w.status === "loading" ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Wallet />
+              )}
+              {w.status === "connecting"
+                ? "Connecting…"
+                : w.status === "loading"
+                  ? "Loading wallets…"
+                  : "Connect wallet"}
+            </Button>
+          )}
         </div>
       )}
       <WalletDialog open={open} onOpenChange={setOpen} />
