@@ -57,6 +57,8 @@ export async function fetchTestnetBalance(accountId: string): Promise<string> {
     try {
       const res = await fetch(url, {
         method: "POST",
+        // A stalled RPC node must not leave the balance stuck on "Reading…".
+        signal: AbortSignal.timeout(8_000),
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           jsonrpc: "2.0",
@@ -65,6 +67,7 @@ export async function fetchTestnetBalance(accountId: string): Promise<string> {
           params: { request_type: "view_account", finality: "final", account_id: accountId },
         }),
       });
+      if (!res.ok) throw new Error(`RPC returned HTTP ${res.status}`);
       const json = (await res.json()) as {
         result?: { amount: string };
         error?: { cause?: { name?: string }; message?: string };
@@ -75,5 +78,10 @@ export async function fetchTestnetBalance(accountId: string): Promise<string> {
       lastError = err;
     }
   }
-  throw lastError instanceof Error ? lastError : new Error("Could not reach NEAR testnet RPC");
+  const reason = lastError instanceof Error ? lastError.message : "unknown error";
+  throw new Error(
+    lastError instanceof Error && lastError.name === "TimeoutError"
+      ? "NEAR testnet RPC timed out"
+      : `NEAR testnet RPC unavailable (${reason})`,
+  );
 }
