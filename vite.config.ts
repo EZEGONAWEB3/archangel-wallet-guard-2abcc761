@@ -6,34 +6,35 @@
 // Never set ssr.external or resolve.external: the Worker has no runtime module resolution, so
 // the build fails. Never add compression (compressPublicAssets, vite-plugin-compression):
 // hosting already compresses at the edge.
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { createRequire } from "node:module";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import type { Plugin } from "vite";
 
 /**
- * NEAR wallet deps import `buffer`. In the production browser build Vite swaps that
- * Node built-in for an empty stub, so `Buffer.from` is undefined and wallets never load.
- * Resolve it to the installed `buffer` npm polyfill instead (browser build only).
+ * NEAR wallet-selector dependencies use Node's buffer and events modules.
+ * Resolve both to their browser-compatible npm shims in the client build;
+ * otherwise production bundlers can replace Node built-ins with empty stubs.
  */
-function browserBufferPolyfill(): Plugin {
-  const bufferPath = createRequire(import.meta.url).resolve("buffer/");
+function browserWalletPolyfills(): Plugin {
+  const require = createRequire(import.meta.url);
+  const bufferPath = require.resolve("buffer/");
+  const eventsPath = require.resolve("events/");
   return {
-    name: "archangel:browser-buffer-polyfill",
+    name: "archangel:browser-wallet-polyfills",
     enforce: "pre",
     applyToEnvironment: (env) => env.name === "client",
     resolveId(id) {
-      // The build normalizes bare `buffer` to `node:buffer` before plugins see it.
-      return id === "buffer" || id === "node:buffer" || id === "buffer/" ? bufferPath : null;
+      if (id === "buffer" || id === "node:buffer" || id === "buffer/") return bufferPath;
+      if (id === "events" || id === "node:events" || id === "events/") return eventsPath;
+      return null;
     },
   };
 }
 
 export default defineConfig({
-  plugins: [browserBufferPolyfill()],
+  plugins: [browserWalletPolyfills()],
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
   },
 });
