@@ -38,10 +38,12 @@ describe("policy engine", () => {
   });
 
   it("blocks invalid account IDs and non-positive amounts", () => {
-    expect(evaluatePayment({ recipient: "Bad..ID", amountNear: 1 }, policy, 0).verdict).toBe("block");
-    expect(evaluatePayment({ recipient: "data-feeds.testnet", amountNear: 0 }, policy, 0).verdict).toBe(
+    expect(evaluatePayment({ recipient: "Bad..ID", amountNear: 1 }, policy, 0).verdict).toBe(
       "block",
     );
+    expect(
+      evaluatePayment({ recipient: "data-feeds.testnet", amountNear: 0 }, policy, 0).verdict,
+    ).toBe("block");
   });
 
   it("does not let the user approve a blocked payment", () => {
@@ -69,7 +71,12 @@ describe("interrupted testnet transfers", () => {
     const base = { agent: "a", recipient: "x.testnet", purpose: "p", createdAt: 1, amountNear: 1 };
     const reqs: PaymentRequest[] = [
       { ...base, id: "1", status: "approved", chain: { status: "awaiting_wallet", at: 1 } },
-      { ...base, id: "2", status: "approved", chain: { status: "submitted", txHash: "abc", at: 1 } },
+      {
+        ...base,
+        id: "2",
+        status: "approved",
+        chain: { status: "submitted", txHash: "abc", at: 1 },
+      },
     ];
     const out = settleInterruptedTransfers(reqs, 5);
     expect(out[0]?.chain?.status).toBe("wallet_failed");

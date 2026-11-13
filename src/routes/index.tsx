@@ -38,7 +38,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "ArchAngel Dashboard — Your AI. Your Wallet. Your Rules." },
       {
         property: "og:description",
-        content: "Approve, warn on, or block AI-agent payments before your NEAR wallet signs anything.",
+        content:
+          "Approve, warn on, or block AI-agent payments before your NEAR wallet signs anything.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -80,7 +81,9 @@ function TopBar() {
         <div className="flex min-w-0 items-center gap-2.5">
           <ShieldMark className="size-9 shrink-0" />
           <div className="min-w-0">
-            <p className="font-display text-lg font-semibold leading-none text-foreground">ArchAngel</p>
+            <p className="font-display text-lg font-semibold leading-none text-foreground">
+              ArchAngel
+            </p>
             <p className="mt-1 hidden truncate text-[11px] text-muted-foreground sm:block">
               Your AI. Your Wallet. Your Rules.
             </p>
@@ -121,12 +124,16 @@ function Intro() {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="space-y-1.5">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Guardian console</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+          Guardian console
+        </p>
         <h1 className="text-2xl font-semibold text-foreground md:text-3xl">
-          Every agent payment, <span className="text-gradient-primary">checked before you sign</span>
+          Every agent payment,{" "}
+          <span className="text-gradient-primary">checked before you sign</span>
         </h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Your AI agents ask; ArchAngel checks each request against your caps and trusted list; you decide.
+          Your AI agents ask; ArchAngel checks each request against your caps and trusted list; you
+          decide.
         </p>
       </div>
       <Button
@@ -143,8 +150,8 @@ function Intro() {
           <AlertDialogHeader>
             <AlertDialogTitle>Reset the demo?</AlertDialogTitle>
             <AlertDialogDescription>
-              Restores the sample requests, default caps and trusted list, and clears the log in this browser.
-              Your wallet stays connected.
+              Restores the sample requests, default caps and trusted list, and clears the log in
+              this browser. Your wallet stays connected.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -171,9 +178,9 @@ function SimulationNotice() {
       <div className="space-y-1 text-sm">
         <p className="font-medium text-foreground">Demo mode — decisions are simulated</p>
         <p className="text-muted-foreground">
-          Agent requests are sample data, and Approve / Warn / Block only change this browser's records. Your caps
-          and trusted list are checked here in the app, not enforced on-chain. Funds move only if you choose
-          “Send on testnet” and sign in your own wallet.
+          Agent requests are sample data, and Approve / Warn / Block only change this browser's
+          records. Your caps and trusted list are checked here in the app, not enforced on-chain.
+          Funds move only if you choose “Send on testnet” and sign in your own wallet.
         </p>
       </div>
     </div>
@@ -210,20 +217,45 @@ function Overview() {
           <SourceBadge source="demo" />
         </div>
         <dl className="mt-4 grid grid-cols-3 gap-3">
-          <Stat icon={<Clock className="size-4" />} label="Needs review" value={pending} tone="text-primary" />
-          <Stat icon={<CircleCheck className="size-4" />} label="Allowed" value={allowed} tone="text-success" />
-          <Stat icon={<Ban className="size-4" />} label="Blocked" value={blocked} tone="text-destructive" />
+          <Stat
+            icon={<Clock className="size-4" />}
+            label="Needs review"
+            value={pending}
+            tone="text-primary"
+          />
+          <Stat
+            icon={<CircleCheck className="size-4" />}
+            label="Allowed"
+            value={allowed}
+            tone="text-success"
+          />
+          <Stat
+            icon={<Ban className="size-4" />}
+            label="Blocked"
+            value={blocked}
+            tone="text-destructive"
+          />
         </dl>
         <p className="mt-4 text-xs text-muted-foreground">
-          {policy.trusted.length} trusted recipient{policy.trusted.length === 1 ? "" : "s"} · rules: block over caps,
-          allow trusted, warn on unknown.
+          {policy.trusted.length} trusted recipient{policy.trusted.length === 1 ? "" : "s"} · rules:
+          block over caps, allow trusted, warn on unknown.
         </p>
       </Panel>
     </div>
   );
 }
 
-function Stat({ icon, label, value, tone }: { icon: ReactNode; label: string; value: number; tone: string }) {
+function Stat({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: number;
+  tone: string;
+}) {
   return (
     <div className="rounded-lg border border-border bg-surface p-3">
       <dt className={`flex items-center gap-1.5 text-[11px] ${tone}`}>

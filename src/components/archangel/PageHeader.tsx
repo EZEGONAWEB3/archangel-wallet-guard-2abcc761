@@ -25,7 +25,9 @@ export function PageHeader({
 
 export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-xl border border-border bg-gradient-card shadow-card ${className}`}>
+    <section
+      className={`rounded-xl border border-border bg-gradient-card shadow-card ${className}`}
+    >
       {children}
     </section>
   );

@@ -17,7 +17,13 @@ import { useGuardian } from "@/lib/guardian/store";
 import { isValidAccountId, normalizeAccountId } from "@/lib/guardian/near";
 
 /** Lets you play the AI agent: submit a payment request and watch the guardian evaluate it. */
-export function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function NewRequestDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
   const { addRequest, evaluate } = useGuardian();
   const [agent, setAgent] = useState("My Agent");
   const [recipient, setRecipient] = useState("");
@@ -32,12 +38,18 @@ export function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpen
     isValidAccountId(recipientId) &&
     Number.isFinite(amountNum) &&
     amountNum > 0;
-  const preview = recipient && amount ? evaluate({ recipient: recipientId, amountNear: amountNum }) : null;
+  const preview =
+    recipient && amount ? evaluate({ recipient: recipientId, amountNear: amountNum }) : null;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!valid) return;
-    addRequest({ agent: agent.trim(), recipient: recipientId, amountNear: amountNum, purpose: purpose.trim() });
+    addRequest({
+      agent: agent.trim(),
+      recipient: recipientId,
+      amountNear: amountNum,
+      purpose: purpose.trim(),
+    });
     toast.info("Payment request queued for review");
     setRecipient("");
     setAmount("");
@@ -58,7 +70,12 @@ export function NewRequestDialog({ open, onOpenChange }: { open: boolean; onOpen
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="nr-agent">Agent name</Label>
-              <Input id="nr-agent" value={agent} onChange={(e) => setAgent(e.target.value)} maxLength={40} />
+              <Input
+                id="nr-agent"
+                value={agent}
+                onChange={(e) => setAgent(e.target.value)}
+                maxLength={40}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="nr-amount">Amount (NEAR)</Label>

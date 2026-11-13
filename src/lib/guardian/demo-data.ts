@@ -74,7 +74,9 @@ export function createRequest(template: Template, now: number): PaymentRequest {
 }
 
 export function randomTemplate(): Template {
-  return REQUEST_TEMPLATES[Math.floor(Math.random() * REQUEST_TEMPLATES.length)] ?? REQUEST_TEMPLATES[0]!;
+  return (
+    REQUEST_TEMPLATES[Math.floor(Math.random() * REQUEST_TEMPLATES.length)] ?? REQUEST_TEMPLATES[0]!
+  );
 }
 
 export const DEMO_BALANCE_NEAR = 125;

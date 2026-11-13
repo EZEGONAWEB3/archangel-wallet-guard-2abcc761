@@ -39,6 +39,7 @@ export function StatusBadge({ status }: { status: RequestStatus }) {
 
 /** Labels that say where a value comes from: demo data, this browser, or live NEAR testnet. */
 export function SourceBadge({ source }: { source: "demo" | "local" | "live" }) {
-  const label = source === "demo" ? "Demo · mock" : source === "local" ? "Local only" : "Live testnet";
+  const label =
+    source === "demo" ? "Demo · mock" : source === "local" ? "Local only" : "Live testnet";
   return <Badge variant={source}>{label}</Badge>;
 }

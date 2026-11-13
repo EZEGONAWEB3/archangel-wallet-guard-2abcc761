@@ -32,7 +32,9 @@ export function PolicyPanel() {
     }
     setError(null);
     updateCaps(p, d);
-    toast.success("Spending caps saved", { description: "Stored in this browser only — not on-chain." });
+    toast.success("Spending caps saved", {
+      description: "Stored in this browser only — not on-chain.",
+    });
   };
 
   return (
@@ -80,8 +82,8 @@ export function PolicyPanel() {
         </div>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <p className="text-xs text-muted-foreground">
-          Payments above either cap are blocked and can't be approved. These limits are checked in this app
-          before your wallet is asked to sign — they are not enforced on-chain.
+          Payments above either cap are blocked and can't be approved. These limits are checked in
+          this app before your wallet is asked to sign — they are not enforced on-chain.
         </p>
         <Button type="submit" size="sm" disabled={!dirty || !ready}>
           Save caps

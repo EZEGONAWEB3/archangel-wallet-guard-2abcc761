@@ -3,7 +3,15 @@
  * ArchAngel never asks for, sees, or stores seed phrases or private keys: sign-in and any
  * signing happen inside the user's wallet.
  */
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { WalletSelector } from "@near-wallet-selector/core";
 import { fetchTestnetBalance, nearToYocto, NEAR_NETWORK } from "./near";
 import { PENDING_TX_KEY, useGuardian } from "./store";
@@ -70,13 +78,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         const { Buffer } = await import("buffer");
         g.Buffer ??= Buffer;
 
-        const [{ setupWalletSelector }, { setupMyNearWallet }, { setupMeteorWallet }, { setupIntearWallet }] =
-          await Promise.all([
-            import("@near-wallet-selector/core"),
-            import("@near-wallet-selector/my-near-wallet"),
-            import("@near-wallet-selector/meteor-wallet"),
-            import("@near-wallet-selector/intear-wallet"),
-          ]);
+        const [
+          { setupWalletSelector },
+          { setupMyNearWallet },
+          { setupMeteorWallet },
+          { setupIntearWallet },
+        ] = await Promise.all([
+          import("@near-wallet-selector/core"),
+          import("@near-wallet-selector/my-near-wallet"),
+          import("@near-wallet-selector/meteor-wallet"),
+          import("@near-wallet-selector/intear-wallet"),
+        ]);
 
         const selector = await setupWalletSelector({
           network: NEAR_NETWORK,
@@ -137,7 +149,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       try {
         const wallet = await selector.wallet(walletId);
         // No contractId: ArchAngel asks for no function-call access key, only the account ID.
-        const accounts = await (wallet.signIn as (p: object) => Promise<{ accountId: string }[]>)({});
+        const accounts = await (wallet.signIn as (p: object) => Promise<{ accountId: string }[]>)(
+          {},
+        );
         if (accounts?.[0]) {
           logEvent({
             kind: "wallet",
@@ -224,14 +238,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           kind: "chain",
           tone: success ? "allow" : "block",
           title: success ? "Testnet transfer reported successful" : "Testnet transfer failed",
-          detail: hash ? `Transaction ${hash} (as reported by the wallet / RPC outcome).` : "No hash returned.",
+          detail: hash
+            ? `Transaction ${hash} (as reported by the wallet / RPC outcome).`
+            : "No hash returned.",
         });
         void loadBalance(accountId);
       } catch (err) {
         localStorage.removeItem(PENDING_TX_KEY);
         const message = err instanceof Error ? err.message : "Wallet rejected or failed.";
         setChain(req.id, { status: "wallet_failed", error: message, at: Date.now() });
-        logEvent({ kind: "chain", tone: "block", title: "Wallet did not send the transfer", detail: message });
+        logEvent({
+          kind: "chain",
+          tone: "block",
+          title: "Wallet did not send the transfer",
+          detail: message,
+        });
         throw err;
       }
     },

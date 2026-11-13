@@ -15,7 +15,13 @@ import { useWallet } from "@/lib/guardian/wallet";
 import { EXPLORER_ACCOUNT_URL, shortAccount, yoctoToNear } from "@/lib/guardian/near";
 
 /** Picker for the wallets the selector loaded. Sign-in happens inside the chosen wallet. */
-export function WalletDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function WalletDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
   const { options, connect, status, initError } = useWallet();
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -39,8 +45,8 @@ export function WalletDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         <DialogHeader>
           <DialogTitle>Connect a NEAR testnet wallet</DialogTitle>
           <DialogDescription>
-            You sign in inside your wallet. ArchAngel only learns your account ID — it never asks for a
-            seed phrase or private key.
+            You sign in inside your wallet. ArchAngel only learns your account ID — it never asks
+            for a seed phrase or private key.
           </DialogDescription>
         </DialogHeader>
         {status === "unavailable" && (
@@ -66,7 +72,9 @@ export function WalletDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium text-foreground">{o.name}</span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    {o.available ? (o.description ?? `${o.type} wallet`) : "Not available in this browser"}
+                    {o.available
+                      ? (o.description ?? `${o.type} wallet`)
+                      : "Not available in this browser"}
                   </span>
                 </span>
                 {busy === o.id && <Loader2 className="size-4 animate-spin text-primary" />}
@@ -76,8 +84,8 @@ export function WalletDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         </ul>
         <p className="flex items-start gap-2 text-xs text-muted-foreground">
           <KeyRound className="mt-0.5 size-3.5 shrink-0 text-primary" />
-          Connecting doesn't add any access key or permission. Every transfer still needs your approval in the
-          wallet.
+          Connecting doesn't add any access key or permission. Every transfer still needs your
+          approval in the wallet.
         </p>
       </DialogContent>
     </Dialog>
@@ -113,7 +121,9 @@ export function WalletPanel() {
       {w.status === "connected" && w.accountId ? (
         <div className="mt-4 space-y-4">
           <div>
-            <p className="text-xs text-muted-foreground">Account{w.walletName ? ` · via ${w.walletName}` : ""}</p>
+            <p className="text-xs text-muted-foreground">
+              Account{w.walletName ? ` · via ${w.walletName}` : ""}
+            </p>
             <a
               href={`${EXPLORER_ACCOUNT_URL}${w.accountId}`}
               target="_blank"
@@ -132,16 +142,24 @@ export function WalletPanel() {
             </div>
             {w.balanceYocto ? (
               <p className="mt-1 font-mono text-xl font-semibold text-foreground">
-                {yoctoToNear(w.balanceYocto)} <span className="text-sm text-muted-foreground">NEAR</span>
+                {yoctoToNear(w.balanceYocto)}{" "}
+                <span className="text-sm text-muted-foreground">NEAR</span>
               </p>
             ) : w.balanceError ? (
-              <p className="mt-1 text-sm text-destructive">Couldn't read balance: {w.balanceError}</p>
+              <p className="mt-1 text-sm text-destructive">
+                Couldn't read balance: {w.balanceError}
+              </p>
             ) : (
               <p className="mt-1 text-sm text-muted-foreground">Reading from testnet…</p>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="surface" onClick={() => void refresh()} disabled={refreshing}>
+            <Button
+              size="sm"
+              variant="surface"
+              onClick={() => void refresh()}
+              disabled={refreshing}
+            >
               <RefreshCw className={refreshing ? "animate-spin" : ""} /> Refresh
             </Button>
             <Button size="sm" variant="ghost" onClick={() => void w.disconnect()}>
@@ -159,10 +177,20 @@ export function WalletPanel() {
           <Button
             variant="hero"
             onClick={() => setOpen(true)}
-            disabled={w.status === "loading" || w.status === "connecting" || w.status === "unavailable"}
+            disabled={
+              w.status === "loading" || w.status === "connecting" || w.status === "unavailable"
+            }
           >
-            {w.status === "connecting" || w.status === "loading" ? <Loader2 className="animate-spin" /> : <Wallet />}
-            {w.status === "connecting" ? "Connecting…" : w.status === "loading" ? "Loading wallets…" : "Connect wallet"}
+            {w.status === "connecting" || w.status === "loading" ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Wallet />
+            )}
+            {w.status === "connecting"
+              ? "Connecting…"
+              : w.status === "loading"
+                ? "Loading wallets…"
+                : "Connect wallet"}
           </Button>
         </div>
       )}
@@ -176,12 +204,18 @@ function ConnectionPill({ status }: { status: ReturnType<typeof useWallet>["stat
     connected: { label: "Connected", dot: "bg-success", text: "text-success" },
     connecting: { label: "Connecting", dot: "bg-warning", text: "text-warning" },
     loading: { label: "Loading", dot: "bg-muted-foreground", text: "text-muted-foreground" },
-    disconnected: { label: "Disconnected", dot: "bg-muted-foreground", text: "text-muted-foreground" },
+    disconnected: {
+      label: "Disconnected",
+      dot: "bg-muted-foreground",
+      text: "text-muted-foreground",
+    },
     unavailable: { label: "Unavailable", dot: "bg-destructive", text: "text-destructive" },
   } as const;
   const m = map[status];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs ${m.text}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs ${m.text}`}
+    >
       <span className={`size-1.5 rounded-full ${m.dot}`} /> {m.label}
     </span>
   );
