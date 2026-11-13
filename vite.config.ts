@@ -21,8 +21,9 @@ function browserBufferPolyfill(): Plugin {
   return {
     name: "archangel:browser-buffer-polyfill",
     enforce: "pre",
-    applyToEnvironment: (env) => env.name === "client",
-    resolveId(id) {
+    // applyToEnvironment: (env) => env.name === "client",
+    resolveId(id, importer) {
+      if (/buffer/.test(id)) console.log("[bufdbg]", this.environment?.name, id, importer?.slice(-60));
       return id === "buffer" || id === "buffer/" ? bufferPath : null;
     },
   };
