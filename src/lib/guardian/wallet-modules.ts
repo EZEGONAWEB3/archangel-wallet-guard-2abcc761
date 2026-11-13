@@ -6,10 +6,13 @@
  * calls `eval()` at load time, which the Cloudflare Worker forbids, and the bundler would
  * otherwise share its chunk with router code and crash every server-rendered page.
  */
+import type { WalletModuleFactory } from "@near-wallet-selector/core";
+
 type WalletLibs = {
   setupWalletSelector: typeof import("@near-wallet-selector/core").setupWalletSelector;
-  modules: ReturnType<typeof import("@near-wallet-selector/my-near-wallet").setupMyNearWallet>[];
+  modules: WalletModuleFactory[];
 };
+type TransferAction = typeof import("@near-js/transactions").actionCreators.transfer;
 
 const SERVER_ERROR = "NEAR wallet libraries only load in the browser.";
 
@@ -34,11 +37,11 @@ export const loadWalletLibs: () => Promise<WalletLibs> = import.meta.env.SSR
       };
     };
 
-export const loadTransferAction: () => Promise<(yocto: bigint) => unknown> = import.meta.env.SSR
+export const loadTransferAction: () => Promise<TransferAction> = import.meta.env.SSR
   ? () => Promise.reject(new Error(SERVER_ERROR))
   : async () => {
       const { actionCreators } = await import("@near-js/transactions");
-      return (yocto: bigint) => actionCreators.transfer(yocto);
+      return actionCreators.transfer;
     };
 
 /** Reject if `promise` takes longer than `ms`, so a stalled wallet service can't hang the UI. */

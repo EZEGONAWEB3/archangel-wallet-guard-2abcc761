@@ -82,7 +82,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           "Wallet libraries took too long to load. Check your connection and retry.",
         );
         const selector = await withTimeout(
-          setupWalletSelector({ network: NEAR_NETWORK, modules: modules as never }),
+          setupWalletSelector({ network: NEAR_NETWORK, modules }),
           20_000,
           "Wallet services didn't respond in time. Retry, or keep using the demo without a wallet.",
         );
@@ -216,7 +216,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         const wallet = await selector.wallet();
         const outcome = await wallet.signAndSendTransaction({
           receiverId: req.recipient,
-          actions: [transfer(BigInt(nearToYocto(req.amountNear))) as never],
+          actions: [transfer(BigInt(nearToYocto(req.amountNear)))],
         });
         localStorage.removeItem(PENDING_TX_KEY);
         const hash = outcome?.transaction?.hash ?? outcome?.transaction_outcome?.id;
