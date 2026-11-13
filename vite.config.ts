@@ -12,7 +12,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import type { Plugin } from "vite";
 
 /**
- * NEAR wallet deps call `require("buffer")`. In the production browser build Vite swaps that
+ * NEAR wallet deps import `buffer`. In the production browser build Vite swaps that
  * Node built-in for an empty stub, so `Buffer.from` is undefined and wallets never load.
  * Resolve it to the installed `buffer` npm polyfill instead (browser build only).
  */
@@ -21,10 +21,10 @@ function browserBufferPolyfill(): Plugin {
   return {
     name: "archangel:browser-buffer-polyfill",
     enforce: "pre",
-    // applyToEnvironment: (env) => env.name === "client",
-    resolveId(id, importer) {
-      if (/buffer/.test(id)) console.log("[bufdbg]", this.environment?.name, id, importer?.slice(-60));
-      return id === "buffer" || id === "buffer/" ? bufferPath : null;
+    applyToEnvironment: (env) => env.name === "client",
+    resolveId(id) {
+      // The build normalizes bare `buffer` to `node:buffer` before plugins see it.
+      return id === "buffer" || id === "node:buffer" || id === "buffer/" ? bufferPath : null;
     },
   };
 }
