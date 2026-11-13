@@ -32,5 +32,5 @@ use the editor.
 ## Project rules
 
 - Guardian policy logic stays as pure functions in `src/lib/guardian/policy.ts` with tests beside it; the store only persists and logs. Why: rules must be testable without a browser.
-- Wallet selector modules are dynamically imported in the browser only, after setting `globalThis.global` and `Buffer`. Why: they read Node globals at load time and crash SSR/browser otherwise.
+- NEAR wallet/transaction libraries are imported only through `src/lib/guardian/wallet-modules.ts`, behind an `import.meta.env.SSR` ternary, after setting `globalThis.global` and `Buffer`. Why: their sha256 dep calls `eval()` (forbidden on the Worker) and shared chunks would otherwise crash every SSR page; they also read Node globals at load.
 - Testnet transfer status is recorded only from what the wallet returns; anything unanswered is settled as failed on reload. Why: never show funds as moved without wallet proof.
