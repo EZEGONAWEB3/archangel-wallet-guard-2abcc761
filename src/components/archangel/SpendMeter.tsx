@@ -7,7 +7,9 @@ export function SpendMeter({ spent, cap }: { spent: number; cap: number }) {
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="font-mono text-2xl font-semibold text-foreground">{formatNear(spent)}</span>
+        <span className="font-mono text-2xl font-semibold text-foreground">
+          {formatNear(spent)}
+        </span>
         <span className="text-xs text-muted-foreground">of {formatNear(cap)} daily cap</span>
       </div>
       <div
@@ -18,7 +20,10 @@ export function SpendMeter({ spent, cap }: { spent: number; cap: number }) {
         aria-valuemax={100}
         aria-label="Daily spending used"
       >
-        <div className={cn("h-full rounded-full transition-all duration-500", tone)} style={{ width: `${pct}%` }} />
+        <div
+          className={cn("h-full rounded-full transition-all duration-500", tone)}
+          style={{ width: `${pct}%` }}
+        />
       </div>
       <p className="text-xs text-muted-foreground">
         {formatNear(Math.max(0, cap - spent))} left today · {Math.round(pct)}% used

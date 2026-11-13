@@ -28,3 +28,9 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- Guardian policy logic stays as pure functions in `src/lib/guardian/policy.ts` with tests beside it; the store only persists and logs. Why: rules must be testable without a browser.
+- Wallet selector modules are dynamically imported in the browser only, after setting `globalThis.global` and `Buffer`. Why: they read Node globals at load time and crash SSR/browser otherwise.
+- Testnet transfer status is recorded only from what the wallet returns; anything unanswered is settled as failed on reload. Why: never show funds as moved without wallet proof.

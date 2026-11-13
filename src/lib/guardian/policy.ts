@@ -92,7 +92,10 @@ export function evaluatePayment(
       reasons: [`${req.recipient} is not on your trusted list. Check before approving.`],
     };
   }
-  return { verdict: "allow", reasons: ["Trusted recipient, within per-transaction and daily caps."] };
+  return {
+    verdict: "allow",
+    reasons: ["Trusted recipient, within per-transaction and daily caps."],
+  };
 }
 
 /** Which manual decisions the user may take for a given verdict. Block verdicts cannot be approved. */
@@ -117,10 +120,31 @@ export function spentToday(requests: PaymentRequest[], now: number): number {
   return round(
     requests
       .filter(
-        (r) =>
-          (r.status === "approved" || r.status === "warned") && (r.decidedAt ?? 0) >= dayStart,
+        (r) => (r.status === "approved" || r.status === "warned") && (r.decidedAt ?? 0) >= dayStart,
       )
       .reduce((sum, r) => sum + r.amountNear, 0),
+  );
+}
+
+/**
+ * A transfer left "awaiting_wallet" (page closed or reloaded before the wallet answered) is never
+ * shown as sent: mark it failed so the user can see it and retry.
+ */
+export function settleInterruptedTransfers(
+  requests: PaymentRequest[],
+  at: number,
+): PaymentRequest[] {
+  return requests.map((r) =>
+    r.chain?.status === "awaiting_wallet"
+      ? {
+          ...r,
+          chain: {
+            status: "wallet_failed",
+            error: "The page closed before your wallet answered. Nothing was recorded as sent.",
+            at,
+          },
+        }
+      : r,
   );
 }
 

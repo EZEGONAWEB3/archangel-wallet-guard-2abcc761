@@ -86,13 +86,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "ArchAngel — Your AI. Your Wallet. Your Rules." },
       {
         name: "description",
-        content: "ArchAngel guards AI-agent payments on NEAR with spending caps, trusted recipients and a security log.",
+        content:
+          "ArchAngel guards AI-agent payments on NEAR with spending caps, trusted recipients and a security log.",
       },
       { name: "author", content: "ArchAngel" },
       { property: "og:title", content: "ArchAngel — Your AI. Your Wallet. Your Rules." },
       {
         property: "og:description",
-        content: "Review, approve or block AI-agent payments before your NEAR wallet signs anything.",
+        content:
+          "Review, approve or block AI-agent payments before your NEAR wallet signs anything.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

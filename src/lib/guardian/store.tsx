@@ -2,13 +2,22 @@
  * Local guardian state: policy, trusted list, agent payment requests, and the security log.
  * Persisted to localStorage for the demo — nothing here is stored or enforced on-chain.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   DEFAULT_POLICY,
   allowedDecisions,
   decisionToStatus,
   evaluatePayment,
   round,
+  settleInterruptedTransfers,
   spentToday,
   type ChainState,
   type Decision,
@@ -16,7 +25,12 @@ import {
   type Policy,
   type Verdict,
 } from "./policy";
-import { createRequest, createSampleRequests, randomTemplate, REQUEST_TEMPLATES } from "./demo-data";
+import {
+  createRequest,
+  createSampleRequests,
+  randomTemplate,
+  REQUEST_TEMPLATES,
+} from "./demo-data";
 import { isValidAccountId, normalizeAccountId } from "./near";
 
 const STORAGE_KEY = "archangel:v1";
@@ -44,7 +58,9 @@ type NewRequest = Pick<PaymentRequest, "agent" | "recipient" | "amountNear" | "p
 interface GuardianContextValue extends PersistedState {
   ready: boolean;
   spentToday: number;
-  evaluate: (req: Pick<PaymentRequest, "recipient" | "amountNear">) => ReturnType<typeof evaluatePayment>;
+  evaluate: (
+    req: Pick<PaymentRequest, "recipient" | "amountNear">,
+  ) => ReturnType<typeof evaluatePayment>;
   decide: (id: string, decision: Decision) => { ok: boolean; message: string };
   addRequest: (req: NewRequest) => void;
   simulateIncoming: () => void;
@@ -64,7 +80,7 @@ function logId(): string {
   return `log_${Date.now().toString(36)}_${logCounter}`;
 }
 
-function freshState(now: number): PersistedState {
+function freshState(now: number, reset = false): PersistedState {
   return {
     policy: { ...DEFAULT_POLICY, trusted: [...DEFAULT_POLICY.trusted] },
     requests: createSampleRequests(now),
@@ -74,8 +90,8 @@ function freshState(now: number): PersistedState {
         at: now,
         kind: "system",
         tone: "info",
-        title: "Demo guardian initialized",
-        detail: `Loaded ${REQUEST_TEMPLATES.slice(0, 5).length} sample agent payment requests and a local demo policy.`,
+        title: reset ? "Demo reset" : "Demo guardian initialized",
+        detail: `${reset ? "Cleared the previous demo data. " : ""}Loaded ${REQUEST_TEMPLATES.slice(0, 5).length} sample agent payment requests and a local demo policy.`,
       },
     ],
   };
@@ -86,7 +102,8 @@ function load(): PersistedState | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PersistedState;
-    if (!parsed.policy || !Array.isArray(parsed.requests) || !Array.isArray(parsed.log)) return null;
+    if (!parsed.policy || !Array.isArray(parsed.requests) || !Array.isArray(parsed.log))
+      return null;
     return parsed;
   } catch {
     return null;
@@ -104,7 +121,10 @@ export function GuardianProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loaded = load() ?? freshState(Date.now());
     const reconciled = reconcileWalletRedirect(loaded);
-    setState(reconciled);
+    setState({
+      ...reconciled,
+      requests: settleInterruptedTransfers(reconciled.requests, Date.now()),
+    });
     setNow(Date.now());
     setReady(true);
     const t = setInterval(() => setNow(Date.now()), 60_000);
@@ -124,14 +144,16 @@ export function GuardianProvider({ children }: { children: ReactNode }) {
   });
 
   const evaluate = useCallback(
-    (req: Pick<PaymentRequest, "recipient" | "amountNear">) => evaluatePayment(req, state.policy, spent),
+    (req: Pick<PaymentRequest, "recipient" | "amountNear">) =>
+      evaluatePayment(req, state.policy, spent),
     [state.policy, spent],
   );
 
   const decide = useCallback(
     (id: string, decision: Decision) => {
       const req = state.requests.find((r) => r.id === id);
-      if (!req || req.status !== "pending") return { ok: false, message: "Request is no longer pending." };
+      if (!req || req.status !== "pending")
+        return { ok: false, message: "Request is no longer pending." };
       const evaluation = evaluatePayment(req, state.policy, spent);
       if (!allowedDecisions(evaluation.verdict).includes(decision)) {
         return { ok: false, message: "Policy blocks this payment. It can't be approved." };
@@ -207,12 +229,18 @@ export function GuardianProvider({ children }: { children: ReactNode }) {
   const addTrusted = useCallback(
     (accountId: string) => {
       const id = normalizeAccountId(accountId);
-      if (!isValidAccountId(id)) return { ok: false, message: "That isn't a valid NEAR account ID." };
+      if (!isValidAccountId(id))
+        return { ok: false, message: "That isn't a valid NEAR account ID." };
       if (state.policy.trusted.includes(id)) return { ok: false, message: "Already trusted." };
       setState((s) =>
         appendLog(
           { ...s, policy: { ...s.policy, trusted: [...s.policy.trusted, id] } },
-          { kind: "trusted", tone: "allow", title: `Trusted ${id}`, detail: "Added to the local trusted list." },
+          {
+            kind: "trusted",
+            tone: "allow",
+            title: `Trusted ${id}`,
+            detail: "Added to the local trusted list.",
+          },
         ),
       );
       return { ok: true, message: `${id} is now trusted.` };
@@ -247,7 +275,7 @@ export function GuardianProvider({ children }: { children: ReactNode }) {
 
   const resetDemo = useCallback(() => {
     localStorage.removeItem(PENDING_TX_KEY);
-    setState(freshState(Date.now()));
+    setState(freshState(Date.now(), true));
   }, []);
 
   const value: GuardianContextValue = {
@@ -305,7 +333,9 @@ function reconcileWalletRedirect(state: PersistedState): PersistedState {
         at,
         kind: "chain",
         tone: hashes ? "info" : "block",
-        title: hashes ? "Wallet returned a testnet transaction hash" : "Wallet did not send the transfer",
+        title: hashes
+          ? "Wallet returned a testnet transaction hash"
+          : "Wallet did not send the transfer",
         detail: hashes
           ? `For ${req?.recipient ?? "request"}: ${chain.txHash}. Check the explorer for the final status.`
           : `Wallet reported: ${chain.error}`,

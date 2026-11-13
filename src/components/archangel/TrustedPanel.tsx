@@ -47,14 +47,22 @@ export function TrustedPanel() {
           }}
           className="font-mono"
         />
-        <Button type="submit" size="icon" variant="surface" aria-label="Add trusted recipient" disabled={!value.trim()}>
+        <Button
+          type="submit"
+          size="icon"
+          variant="surface"
+          aria-label="Add trusted recipient"
+          disabled={!value.trim()}
+        >
           <Plus />
         </Button>
       </form>
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
       <ul className="mt-4 space-y-1.5">
         {policy.trusted.length === 0 && (
-          <li className="text-xs text-muted-foreground">No trusted recipients — every payment will be flagged.</li>
+          <li className="text-xs text-muted-foreground">
+            No trusted recipients — every payment will be flagged.
+          </li>
         )}
         {policy.trusted.map((t) => (
           <li

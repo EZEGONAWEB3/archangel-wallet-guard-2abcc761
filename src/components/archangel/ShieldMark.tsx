@@ -5,7 +5,14 @@ export function ShieldMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" fill="none" aria-hidden className={cn("size-8", className)}>
       <defs>
-        <linearGradient id="aa-shield" x1="10" y1="4" x2="38" y2="44" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="aa-shield"
+          x1="10"
+          y1="4"
+          x2="38"
+          y2="44"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="var(--primary-glow)" />
           <stop offset="1" stopColor="var(--primary)" />
         </linearGradient>
@@ -24,7 +31,13 @@ export function ShieldMark({ className }: { className?: string }) {
         fill="var(--background)"
         opacity=".55"
       />
-      <path d="m19.5 23 3.2 3.2 6-6.4" stroke="var(--primary-glow)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="m19.5 23 3.2 3.2 6-6.4"
+        stroke="var(--primary-glow)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

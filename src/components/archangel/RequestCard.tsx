@@ -33,7 +33,9 @@ export function RequestCard({ req }: { req: PaymentRequest }) {
       return;
     }
     const label = d === "approve" ? "Approved" : d === "warn" ? "Allowed with warning" : "Blocked";
-    toast(`${label} · ${formatNear(req.amountNear)}`, { description: "Simulated decision — no funds moved." });
+    toast(`${label} · ${formatNear(req.amountNear)}`, {
+      description: "Simulated decision — no funds moved.",
+    });
   };
 
   const accent =
@@ -65,8 +67,14 @@ export function RequestCard({ req }: { req: PaymentRequest }) {
           </p>
         </div>
         <div className="flex shrink-0 flex-row items-center gap-2 sm:flex-col sm:items-end">
-          <span className="font-mono text-lg font-semibold text-foreground">{formatNear(req.amountNear)}</span>
-          {evaluation ? <VerdictBadge verdict={evaluation.verdict} /> : <StatusBadge status={req.status} />}
+          <span className="font-mono text-lg font-semibold text-foreground">
+            {formatNear(req.amountNear)}
+          </span>
+          {evaluation ? (
+            <VerdictBadge verdict={evaluation.verdict} />
+          ) : (
+            <StatusBadge status={req.status} />
+          )}
         </div>
       </div>
 
@@ -90,7 +98,9 @@ export function RequestCard({ req }: { req: PaymentRequest }) {
               variant="approve"
               disabled={!allowed.includes("approve")}
               onClick={() => act("approve")}
-              title={allowed.includes("approve") ? "Approve this payment" : "Policy blocks this payment"}
+              title={
+                allowed.includes("approve") ? "Approve this payment" : "Policy blocks this payment"
+              }
             >
               <CircleCheck /> Approve
             </Button>
@@ -103,12 +113,19 @@ export function RequestCard({ req }: { req: PaymentRequest }) {
             >
               <TriangleAlert /> Warn
             </Button>
-            <Button size="sm" variant="block" onClick={() => act("block")} title="Refuse this payment">
+            <Button
+              size="sm"
+              variant="block"
+              onClick={() => act("block")}
+              title="Refuse this payment"
+            >
               <Ban /> Block
             </Button>
           </div>
           {evaluation.verdict === "block" && (
-            <p className="mt-2 text-[11px] text-muted-foreground">Over a cap, so it can only be blocked.</p>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Over a cap, so it can only be blocked.
+            </p>
           )}
         </>
       )}
@@ -157,14 +174,13 @@ function ChainSection({ req }: { req: PaymentRequest }) {
 
   if (chain?.status === "wallet_success")
     return (
-      <p className="text-xs text-success">
-        Wallet reported a successful testnet transfer {txLink}
-      </p>
+      <p className="text-xs text-success">Wallet reported a successful testnet transfer {txLink}</p>
     );
   if (chain?.status === "submitted")
     return (
       <p className="text-xs text-primary-glow">
-        Wallet returned a testnet transaction hash {txLink} — check the explorer for the final status.
+        Wallet returned a testnet transaction hash {txLink} — check the explorer for the final
+        status.
       </p>
     );
   if (chain?.status === "awaiting_wallet" || sending)
@@ -188,7 +204,8 @@ function ChainSection({ req }: { req: PaymentRequest }) {
       {status === "connected" && accountId && (
         <>
           <Button size="sm" variant="surface" onClick={() => setConfirm(true)}>
-            <Send /> {chain?.status === "wallet_failed" ? "Try again on testnet" : "Send on testnet"}
+            <Send />{" "}
+            {chain?.status === "wallet_failed" ? "Try again on testnet" : "Send on testnet"}
           </Button>
           <AlertDialog open={confirm} onOpenChange={setConfirm}>
             <AlertDialogContent className="border-border bg-popover">
@@ -198,21 +215,26 @@ function ChainSection({ req }: { req: PaymentRequest }) {
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <p>
                       Your wallet will ask you to sign a transfer of{" "}
-                      <span className="font-mono text-foreground">{formatNear(req.amountNear)}</span> from{" "}
-                      <span className="font-mono text-foreground">{accountId}</span> to{" "}
-                      <span className="font-mono text-foreground">{req.recipient}</span> on NEAR testnet.
+                      <span className="font-mono text-foreground">
+                        {formatNear(req.amountNear)}
+                      </span>{" "}
+                      from <span className="font-mono text-foreground">{accountId}</span> to{" "}
+                      <span className="font-mono text-foreground">{req.recipient}</span> on NEAR
+                      testnet.
                     </p>
                     <p>
-                      ArchAngel's policy check ran here in the app — it isn't enforced on-chain. Only your
-                      wallet signature can move funds. If the recipient account doesn't exist on testnet, the
-                      transfer will fail.
+                      ArchAngel's policy check ran here in the app — it isn't enforced on-chain.
+                      Only your wallet signature can move funds. If the recipient account doesn't
+                      exist on testnet, the transfer will fail.
                     </p>
                   </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => void send()}>Open wallet to sign</AlertDialogAction>
+                <AlertDialogAction onClick={() => void send()}>
+                  Open wallet to sign
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

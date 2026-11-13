@@ -45,7 +45,10 @@ export function RequestsPanel() {
         </div>
       </div>
 
-      <div className="mt-4 inline-flex rounded-lg border border-border bg-surface p-1" role="tablist">
+      <div
+        className="mt-4 inline-flex rounded-lg border border-border bg-surface p-1"
+        role="tablist"
+      >
         {(
           [
             ["pending", `Needs review (${pending.length})`],
@@ -60,7 +63,9 @@ export function RequestsPanel() {
             onClick={() => setTab(id)}
             className={cn(
               "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-              tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+              tab === id
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {label}

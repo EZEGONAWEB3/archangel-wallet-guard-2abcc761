@@ -19,14 +19,19 @@ const FILTERS: { id: "all" | LogKind; label: string }[] = [
 export function ActivityLog() {
   const { log, ready } = useGuardian();
   const [filter, setFilter] = useState<"all" | LogKind>("all");
-  const shown = useMemo(() => (filter === "all" ? log : log.filter((l) => l.kind === filter)), [log, filter]);
+  const shown = useMemo(
+    () => (filter === "all" ? log : log.filter((l) => l.kind === filter)),
+    [log, filter],
+  );
 
   return (
     <Panel className="p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <ScrollText className="size-4 text-primary" /> Security activity log
-          <span className="font-mono text-xs font-normal text-muted-foreground">({log.length})</span>
+          <span className="font-mono text-xs font-normal text-muted-foreground">
+            ({log.length})
+          </span>
         </h2>
         <SourceBadge source="local" />
       </div>
@@ -51,7 +56,9 @@ export function ActivityLog() {
       </div>
       <ol className="mt-4 max-h-[28rem] space-y-2 overflow-y-auto pr-1">
         {!ready && <li className="text-sm text-muted-foreground">Loading log…</li>}
-        {ready && shown.length === 0 && <li className="text-sm text-muted-foreground">Nothing logged here yet.</li>}
+        {ready && shown.length === 0 && (
+          <li className="text-sm text-muted-foreground">Nothing logged here yet.</li>
+        )}
         {shown.map((entry) => (
           <LogRow key={entry.id} entry={entry} />
         ))}
@@ -75,12 +82,17 @@ function LogRow({ entry }: { entry: LogEntry }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
           <p className="break-words text-sm font-medium text-foreground">{entry.title}</p>
-          <time dateTime={new Date(entry.at).toISOString()} className="shrink-0 font-mono text-[11px] text-muted-foreground">
+          <time
+            dateTime={new Date(entry.at).toISOString()}
+            className="shrink-0 font-mono text-[11px] text-muted-foreground"
+          >
             {format(entry.at, "MMM d · HH:mm:ss")}
           </time>
         </div>
         <p className="mt-0.5 break-words text-xs text-muted-foreground">{entry.detail}</p>
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">{entry.kind}</p>
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
+          {entry.kind}
+        </p>
       </div>
     </li>
   );
