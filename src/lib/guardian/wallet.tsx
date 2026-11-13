@@ -63,9 +63,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     (async () => {
       try {
-        // Wallet modules expect Node's Buffer global in the browser.
+        // Wallet modules expect Node's `global` and `Buffer` globals in the browser.
+        // Set them before the wallet modules are imported (they read them at load time).
+        const g = globalThis as unknown as { global?: typeof globalThis; Buffer?: unknown };
+        g.global ??= globalThis;
         const { Buffer } = await import("buffer");
-        const g = globalThis as unknown as { Buffer?: typeof Buffer };
         g.Buffer ??= Buffer;
 
         const [{ setupWalletSelector }, { setupMyNearWallet }, { setupMeteorWallet }, { setupIntearWallet }] =
