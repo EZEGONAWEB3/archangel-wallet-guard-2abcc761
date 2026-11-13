@@ -111,6 +111,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         unsubscribe = () => sub.unsubscribe();
       } catch (err) {
         if (cancelled) return;
+        console.error("[ArchAngel] Wallet selector failed to load", err);
         setInitError(err instanceof Error ? err.message : "Wallet selector failed to load");
         setStatus("unavailable");
       }
