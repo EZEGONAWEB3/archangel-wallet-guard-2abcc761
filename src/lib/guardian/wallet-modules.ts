@@ -16,21 +16,24 @@ type TransferAction = typeof import("@near-js/transactions").actionCreators.tran
 
 const SERVER_ERROR = "NEAR wallet libraries only load in the browser.";
 
-let libsPromise: Promise<typeof import("./near-wallet-libs")> | undefined;
+type Libs = typeof import("./near-wallet-libs");
+let libsPromise: Promise<Libs> | undefined;
 
 /** Load the single wallet bundle once, after installing the Node globals it reads at load. */
-async function loadLibs() {
-  const g = globalThis as unknown as { global?: typeof globalThis; Buffer?: unknown };
-  g.global ??= globalThis;
-  if (!g.Buffer) g.Buffer = (await import("buffer")).Buffer;
-  libsPromise ??= import("./near-wallet-libs");
-  try {
-    return await libsPromise;
-  } catch (err) {
-    libsPromise = undefined; // allow Retry after a network failure
-    throw err;
-  }
-}
+const loadLibs: () => Promise<Libs> = import.meta.env.SSR
+  ? () => Promise.reject(new Error(SERVER_ERROR))
+  : async () => {
+      const g = globalThis as unknown as { global?: typeof globalThis; Buffer?: unknown };
+      g.global ??= globalThis;
+      if (!g.Buffer) g.Buffer = (await import("buffer")).Buffer;
+      libsPromise ??= import("./near-wallet-libs");
+      try {
+        return await libsPromise;
+      } catch (err) {
+        libsPromise = undefined; // allow Retry after a network failure
+        throw err;
+      }
+    };
 
 export const loadWalletLibs: () => Promise<WalletLibs> = import.meta.env.SSR
   ? () => Promise.reject(new Error(SERVER_ERROR))
